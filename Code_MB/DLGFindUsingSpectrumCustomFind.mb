@@ -27,6 +27,9 @@ Include "DLGFindUsingSpectrumCustomFind.def"
 Include "DLGSpectrumCustomFindConfiguration.def"
 Include "SearchUsingServices.def"
 
+Define	TABFILE_COORDSYS		ApplicationDirectory$() & "ApplicationCoordsys.tab"
+Define	TAB_COORDSYS			PathToTableName$(TABFILE_COORDSYS)
+
 Define	CTRL_TXT_SEARCH_FOR_VALUE	100
 Define	CTRL_TXT_ZOOM				150
 Define	CTRL_LST_RESULTS			200
@@ -41,9 +44,9 @@ Declare Sub DLGFUSCFHandler_OKClicked
 Declare Sub DLGFUSCFHandler_ShowAllClicked
 Declare Sub DLGFUSCFHandler_ResultListClicked
 
-Declare Function DLGFUSCFGetNumberOfMatchingRecords(  ByVal sAddress As String
-										, ByVal sPostalCode As String
-										) As Integer
+Declare Function DLGFUSCFGetNumberOfMatchingRecords(	  ByVal sAddress As String
+											, ByVal sPostalCode As String
+											) As Integer
 
 Dim	mnMaximumMatchNumber As Integer,
 	msValueToSearchFor As String,
@@ -338,12 +341,20 @@ OnError GoTo ErrorOccured
 		)
 		File sTabFile
 
-	'**"British National Grid\p27700", 8, 79, 7, -2, 49, 0.9996012717, 400000, -100000
-	'Create Map For sTab
-	'	CoordSys Earth Projection 8, 79, 7, -2, 49, 0.9996012717, 400000, -100000
-	'**"UTM Zone 32 Euref89\p25832", 8, 115, 7, 9.0, 0, 0.9996, 500000, 0
-	Create Map For sTab
-		CoordSys Earth Projection 8, 115, 7, 9.0, 0, 0.9996, 500000, 0
+	If FileExists(TABFILE_COORDSYS) Then
+		Call DEBUGPrint("Using CoordSys based on " & TAB_COORDSYS)
+		Open Table TABFILE_COORDSYS
+		Create Map For sTab
+			Coordsys Table TAB_COORDSYS
+		Close Table TAB_COORDSYS
+	Else
+		'**"British National Grid\p27700", 8, 79, 7, -2, 49, 0.9996012717, 400000, -100000
+		'Create Map For sTab
+		'	CoordSys Earth Projection 8, 79, 7, -2, 49, 0.9996012717, 400000, -100000
+		'**"UTM Zone 32 Euref89\p25832", 8, 115, 7, 9.0, 0, 0.9996, 500000, 0
+		Create Map For sTab
+			CoordSys Earth Projection 8, 115, 7, 9.0, 0, 0.9996, 500000, 0
+	End If
 
 	Call DEBUGPrint("Loading records...")
 	For i = 0 To (Ubound(marrResults) - 1)	'0-based array
@@ -408,11 +419,17 @@ OnError GoTo ErrorOccured
 	End If
 
 	nMID	= MAPFrontMostWindow()
-'	Set CoordSys Window nMID
-	'"British National Grid\p27700", 8, 79, 7, -2, 49, 0.9996012717, 400000, -100000
-	'Set CoordSys Earth Projection 8, 79, 7, -2, 49, 0.9996012717, 400000, -100000
-	'**"UTM Zone 32 Euref89\p25832", 8, 115, 7, 9.0, 0, 0.9996, 500000, 0
-	Set CoordSys Earth Projection 8, 115, 7, 9.0, 0, 0.9996, 500000, 0
+	If FileExists(TABFILE_COORDSYS) Then
+		Call DEBUGPrint("Using CoordSys based on " & TAB_COORDSYS)
+		Open Table TABFILE_COORDSYS
+		Set Coordsys Table TAB_COORDSYS
+		Close Table TAB_COORDSYS
+	Else
+		'"British National Grid\p27700", 8, 79, 7, -2, 49, 0.9996012717, 400000, -100000
+		'Set CoordSys Earth Projection 8, 79, 7, -2, 49, 0.9996012717, 400000, -100000
+		'**"UTM Zone 32 Euref89\p25832", 8, 115, 7, 9.0, 0, 0.9996, 500000, 0
+		Set CoordSys Earth Projection 8, 115, 7, 9.0, 0, 0.9996, 500000, 0
+	End If
 
 	nNum	= nNum - 1	'0-based arrays
 	fX	= Val(SCFWSGetResultX(nNum))
