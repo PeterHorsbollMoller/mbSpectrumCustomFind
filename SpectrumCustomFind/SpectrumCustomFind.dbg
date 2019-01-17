@@ -1,0 +1,56 @@
+08:34:14    Result loaded after: 0
+09:37:32 2 Removing control cmdConfigCustomFind of type 6
+09:37:32 1 Removing control cmdCustomFind of type 1
+16:04:21 Reading defaults from D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbSpectrumCustomFind\SpectrumCustomFind\SpectrumCustomFind.ini
+16:04:21 Reading user settings from C:\Users\PE009MO\AppData\Roaming\MapInfo\MapInfo\SpectrumCustomFind.ini
+16:04:31 SCFWSDoSearch(rugård)
+16:04:34    Result returned after: 3
+16:04:34    Server URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=rugård
+16:04:34    Latest Request URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=rugård
+16:11:37 SCFWSDoSearch(rugård)
+16:11:39    Result returned after: 2
+16:11:39    Server URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=rugård
+16:11:39    Latest Request URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=rugård
+16:11:51 SCFWSDoSearch(vester)
+16:11:53    Result returned after: 2
+16:11:53    Server URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=vester
+16:11:53    Latest Request URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=vester
+16:12:01 SCFWSDoSearch(Vester)
+16:12:03    Result returned after: 2
+16:12:03    Server URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=Vester
+16:12:03    Latest Request URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=Vester
+16:12:39 SCFWSDoSearch(Vester%)
+16:12:41    Result returned after: 2
+16:12:41    Server URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=Vester%
+16:12:41    Latest Request URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=Vester%
+16:12:47 SCFWSDoSearch(admin)
+16:12:49    Result returned after: 2
+16:12:49    Server URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=admin
+16:12:49    Latest Request URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=admin
+16:13:51 SCFWSDoSearch(vester)
+16:14:09    Result returned after: 18
+16:14:09    Server URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=vester
+16:14:09    Latest Request URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=vester
+16:14:09    Result loaded after: 0
+16:14:22 SCFWSDoSearch(vester%1)
+16:14:23    Result returned after: 1
+16:14:23    Server URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=vester%1
+16:14:23    Latest Request URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=vester%1
+16:14:27 SCFWSDoSearch(vester%1%)
+16:14:28    Result returned after: 1
+16:14:28    Server URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=vester%1%
+16:14:28    Latest Request URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=vester%1%
+16:14:28    Result loaded after: 0
+16:15:15 Changed the zoom of the map to 250 after 0 secs
+16:15:15 Changed the center of the map to (587.322,452119 6.139.450,772551) after 0 secs
+16:16:06 Changed the center of the map to (587.285,692145 6.139.470,268582) after 0 secs
+16:16:48 SCFWSDoSearch(vester%1%)
+16:16:49    Result returned after: 1
+16:16:49    Server URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=vester%1%
+16:16:49    Latest Request URL: http://localhost:8080/rest/CustomFind/results.json?Data.SearchValue=vester%1%
+16:16:49    Result loaded after: 0
+16:16:59 Changed the center of the map to (587.322,452119 6.139.450,772551) after 0 secs
+16:20:42 2 Removing control cmdConfigCustomFind of type 6
+16:20:42 1 Removing control cmdCustomFind of type 1
+09:55:54 Reading defaults from D:\Dropbox (Horsboll-Moller)\3. MB_Kode\mbSpectrumCustomFind\SpectrumCustomFind\SpectrumCustomFind.ini
+09:55:54 Reading user settings from C:\Users\PE009MO\AppData\Roaming\MapInfo\MapInfo\SpectrumCustomFind.ini

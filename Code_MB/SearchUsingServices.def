@@ -1,0 +1,57 @@
+'**********************************************
+'The Pitney Bowes Spectrum Custom Find Web Service
+'**********************************************
+
+Declare Method SCFWSInitiate
+	Class "SearchUsingServices.SpectrumCustomFind"  Lib "SearchUsingServices.dll"
+	Alias Initiate
+		( ByVal timeout As Integer
+		, ByVal serverURL As String
+		, ByVal userName As String
+		, ByVal passWord As String
+		)
+
+Declare Method SCFWSDoSearch
+	Class "SearchUsingServices.SpectrumCustomFind"  Lib "SearchUsingServices.dll"
+	Alias DoSearch
+		( ByVal searchValue As String
+		) As Integer
+
+Declare Method SCFWSGetLatestURL
+	Class "SearchUsingServices.SpectrumCustomFind"  Lib "SearchUsingServices.dll"
+	Alias GetLatestURL
+		() As String
+Declare Method SCFWSGetServerURL
+	Class "SearchUsingServices.SpectrumCustomFind"  Lib "SearchUsingServices.dll"
+	Alias GetServerURL
+		() As String
+
+Declare Method SCFWSGetResultDescriptions
+	Class "SearchUsingServices.SpectrumCustomFind"  Lib "SearchUsingServices.dll"
+	Alias GetResultDescriptions
+		( arrResults() As String
+		) As Integer
+Declare Method SCFWSGetResultAttribute
+	Class "SearchUsingServices.SpectrumCustomFind"  Lib "SearchUsingServices.dll"
+	Alias GetResultAttribute
+		( ByVal nElement As Integer
+		, ByVal sAtttributeName As String
+		) As String
+Declare Method SCFWSGetResultDetails
+	Class "SearchUsingServices.SpectrumCustomFind"  Lib "SearchUsingServices.dll"
+	Alias GetResultDetails
+		( ByVal nElement As Integer
+		, geojsonPoint As String
+		, geojsonMBR As String
+		) As String
+
+Declare Method SCFWSGetResultX
+	Class "SearchUsingServices.SpectrumCustomFind"  Lib "SearchUsingServices.dll"
+	Alias GetResultX
+		( ByVal nElement As Integer
+		) As String
+Declare Method SCFWSGetResultY
+	Class "SearchUsingServices.SpectrumCustomFind"  Lib "SearchUsingServices.dll"
+	Alias GetResultY
+		( ByVal nElement As Integer
+		) As String

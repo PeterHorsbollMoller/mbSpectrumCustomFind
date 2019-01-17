@@ -1,0 +1,23 @@
+Declare Function DLGFindUsingSpectrumCustomFind() As Logical
+Declare Sub DLGFUSCFEndHandler
+
+Declare Sub DLGFUSCFSetResultListWidth(ByVal nWidth As Integer)
+Declare Function DLGFUSCFGetResultListWidth() As Integer
+Declare Sub DLGFUSCFSetResultListHeight(ByVal nHeight As Integer)
+Declare Function DLGFUSCFGetResultListHeight() As Integer
+
+Declare Sub DLGFUSCFSetConfigFile(ByVal sFile As String)
+Declare Function DLGFUSCFGetConfigFile() As String
+Declare Sub DLGFUSCFReadConfigFile()
+Declare Sub DLGFUSCFWriteConfigFile()
+
+Declare Function DLGFUSCFSearchDatabaseTable() As Logical
+
+Declare Sub DLGFUSCFSetZoomWidth(ByVal nZoomWidth As Integer)
+Declare Function DLGFUSCFGetZoomWidth() As Integer
+
+Declare Sub DLGFUSCFSetMaximumMatchNumber(ByVal nMaxMatches As Integer)
+Declare Function DLGFUSCFGetMaximumMatchNumber() As Integer
+
+Declare Sub DLGFUSCFSetValueToSearchFor(ByVal sValue As String)
+Declare Function DLGFUSCFGetValueToSearchFor() As String

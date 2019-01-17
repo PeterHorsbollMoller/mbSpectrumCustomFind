@@ -1,0 +1,780 @@
+'*******************************************************************************
+'** 	Created By Peter Horsbøll Møller, Pitney Bowes Business Insight
+'** 	Program:
+'** 	Modul:
+'**
+'*******************************************************************************
+
+'-------------------------------------
+Include "MapBasic.def"
+Include "Icons.def"
+Include "Menu.def"
+'**default constants...
+Include "Library\Defaults.def"
+
+'-------------------------------------
+Include "Library\CONFIGFILELib.def"
+Include "Library\DBMSUtilityLib.def"
+Include "Library\DEBUGLib.def"
+Include "Library\ERRORLib.def"
+Include "Library\FILELib.def"
+Include "Library\MAPPERLib.def"
+Include "Library\STRINGLib.def"
+Include "Library\TABLELib.def"
+Include "Library\STYLELib.def"
+
+Include "DLGFindUsingSpectrumCustomFind.def"
+Include "DLGSpectrumCustomFindConfiguration.def"
+Include "SearchUsingServices.def"
+
+Define	CTRL_TXT_SEARCH_FOR_VALUE	100
+Define	CTRL_TXT_ZOOM				150
+Define	CTRL_LST_RESULTS			200
+Define 	CTRL_LBL_NUM_RECORDS_FOUND	210
+Define	CTRL_LBL_REFINE_INFO		220
+Define	CTRL_CHK_HIGHLIGHT_RECORD	300
+Define	CTRL_CMD_SHOW_ALL			400
+
+Declare Sub DLGFUSCFHandler_OnLoad
+Declare Sub DLGFUSCFHandler_ClearClicked
+Declare Sub DLGFUSCFHandler_OKClicked
+Declare Sub DLGFUSCFHandler_ShowAllClicked
+Declare Sub DLGFUSCFHandler_ResultListClicked
+
+Declare Function DLGFUSCFGetNumberOfMatchingRecords(  ByVal sAddress As String
+										, ByVal sPostalCode As String
+										) As Integer
+
+Dim	mnMaximumMatchNumber As Integer,
+	msValueToSearchFor As String,
+	marrResults() As String,
+	msConfigFile As String,
+	mnResultListWidth, mnResultListHeight As Integer
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function DLGFindUsingSpectrumCustomFind() As Logical
+
+OnError GoTo ErrorOccured
+
+DLGFindUsingSpectrumCustomFind = FALSE
+
+	If MAPFrontMostWindow() = 0 Then
+		Note "Please open a map window before using this function!"
+		Exit Function
+	End If
+
+'	If DLGFUSCFGetConfigFile() <> "" Then
+'		Call DLGFUSCFReadConfigFile()
+'	End If
+
+	Dialog
+		Title "Find using Spectrum"
+		Calling DLGFUSCFHandler_OnLoad
+
+		Control StaticText
+			Position 5,5
+			Width (DLGFUSCFGetResultListWidth())
+			Title "Search for"
+		Control EditText		ID CTRL_TXT_SEARCH_FOR_VALUE
+			Position 5,15
+			Value DLGFUSCFGetValueToSearchFor()
+			Width (DLGFUSCFGetResultListWidth())
+
+		Control StaticText
+			Position (DLGFUSCFGetResultListWidth() + 10),5
+			Width 40
+			Title "Zoom"
+		Control EditText		ID CTRL_TXT_ZOOM
+			Position (DLGFUSCFGetResultListWidth() + 10),15
+			Value FormatNumber$(DLGSCFCGetZoom())
+			Width 40
+
+		Control OKButton
+			Position (DLGFUSCFGetResultListWidth() + 10),30
+			Width 40	Height 32
+			Title "Search"
+			Calling DLGFUSCFHandler_OKClicked
+		Control Button			ID CTRL_CMD_SHOW_ALL
+			Position (DLGFUSCFGetResultListWidth() + 10),65
+			Width 40	Height 22
+			Title "Map all"
+			Calling DLGFUSCFHandler_ShowAllClicked
+
+		Control Button
+			Position (DLGFUSCFGetResultListWidth() + 10),90
+			Width 40	Height 17
+			Title "Clear"
+			Calling DLGFUSCFHandler_ClearClicked
+		Control CancelButton
+			Position (DLGFUSCFGetResultListWidth() + 10),110
+			Width 40	Height 17
+			Title "Close"
+
+		Control Listbox		ID CTRL_LST_RESULTS
+			Position 5,30
+			Width DLGFUSCFGetResultListWidth()	Height DLGFUSCFGetResultListHeight()
+			Calling DLGFUSCFHandler_ResultListClicked
+
+		Control StaticText		ID CTRL_LBL_NUM_RECORDS_FOUND
+			Position 5, (DLGFUSCFGetResultListHeight() + 37)
+			Width (DLGFUSCFGetResultListWidth() - 85)
+			Title "Matching records found: "
+		Control StaticText		ID CTRL_LBL_REFINE_INFO
+			Position 5, (DLGFUSCFGetResultListHeight() + 52)
+			Width DLGFUSCFGetResultListWidth()
+			Title ""
+
+
+DLGFindUsingSpectrumCustomFind = TRUE
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFindUsingSpectrumCustomFind")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGFUSCFHandler_OnLoad
+
+OnError GoTo ErrorOccured
+
+	Alter Control CTRL_CMD_SHOW_ALL Disable
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFHandler_OnLoad")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGFUSCFHandler_ClearClicked
+
+OnError GoTo ErrorOccured
+
+	Alter Control CTRL_TXT_SEARCH_FOR_VALUE		Value ""
+
+	Alter Control CTRL_LBL_NUM_RECORDS_FOUND Title "Matching records found: "
+	Alter Control CTRL_LBL_REFINE_INFO Title ""
+
+	Redim marrResults(0)
+	Alter Control CTRL_LST_RESULTS Title From Variable marrResults
+	Alter Control CTRL_CMD_SHOW_ALL Disable
+	Alter Control CTRL_TXT_SEARCH_FOR_VALUE Active
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFHandler_ClearClicked")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGFUSCFHandler_OKClicked
+
+Dim	nNumMatchFound As Integer
+
+OnError GoTo ErrorOccured
+
+	Dialog Preserve
+
+	Alter Control CTRL_LBL_NUM_RECORDS_FOUND	Title "Please wait..."
+	Alter Control CTRL_LBL_REFINE_INFO 		Title "Requesting data from Spectrum..."
+
+	'**The search value is read from the dialog and set to a property
+	Call DLGFUSCFSetValueToSearchFor(ReadControlValue(CTRL_TXT_SEARCH_FOR_VALUE))
+
+	'**Web Service settings are passed to the .NET assembly
+	Call SCFWSInitiate(20, DLGSCFCGetURL(), DLGSCFCGetUserName(), DLGSCFCGetPassword())
+
+	'**Checking length of the search string
+	If Len(DLGFUSCFGetValueToSearchFor()) Between 1 AND 3 Then
+		Note "Please enter a value with at least 4 characteres!"
+		Alter Control CTRL_TXT_SEARCH_FOR_VALUE Active
+		Exit Sub
+	End If
+
+	Call DEBUGPrint("SCFWSDoSearch(" & DLGFUSCFGetValueToSearchFor() & ")")
+	'**Calling the Search Method in the .NET assembly
+	nNumMatchFound = SCFWSDoSearch(DLGFUSCFGetValueToSearchFor())
+	Call DEBUGPrint("   Result returned...")
+
+	Call DEBUGPrint("   Server URL: " & SCFWSGetLatestURL())
+	Call DEBUGPrint("   Latest Request URL: " & SCFWSGetLatestURL())
+	'**Checking the number of found records
+	If nNumMatchFound = -1 Then
+		Alter Control CTRL_LBL_NUM_RECORDS_FOUND Title "Matching records found: "
+	ElseIf nNumMatchFound = -2 Then
+		Alter Control CTRL_LBL_NUM_RECORDS_FOUND Title "Matching records found: 0"
+	Else
+		Alter Control CTRL_LBL_NUM_RECORDS_FOUND Title "Matching records found: " & FormatNumber$(nNumMatchFound)
+	End If
+
+	If nNumMatchFound >= DLGFUSCFGetMaximumMatchNumber() OR nNumMatchFound = -1 Then
+		Alter Control CTRL_LBL_REFINE_INFO Title "The search returned more than " & FormatNumber$(DLGFUSCFGetMaximumMatchNumber()) & " records. Try refining the search"
+	ElseIf nNumMatchFound = -2 Then
+		Alter Control CTRL_LBL_REFINE_INFO Title "The search returned 0 records. Try refining the search"
+	Else
+		Alter Control CTRL_LBL_REFINE_INFO Title "If the result doesn’t show what you are looking for, try refining the search"
+	End If
+
+	'**Retrieving the records found from the .NET assembly
+	If nNumMatchFound > DLGFUSCFGetMaximumMatchNumber() OR nNumMatchFound <= 0 Then
+		Redim marrResults(0)
+		Alter Control CTRL_TXT_SEARCH_FOR_VALUE Active
+	Else
+		Redim marrResults(nNumMatchFound)
+		If SCFWSGetResultDescriptions(marrResults) = nNumMatchFound Then
+			'Print "Success!"
+		End If
+	End If
+
+	'**Publishing the list with the matching records
+	Alter Control CTRL_LST_RESULTS Title From Variable marrResults
+
+	If Ubound(marrResults) > 0 Then
+		Alter Control CTRL_CMD_SHOW_ALL Enable
+	Else
+		Alter Control CTRL_CMD_SHOW_ALL Disable
+	End If
+	If Ubound(marrResults) = 1 Then
+		Alter Control CTRL_LST_RESULTS Value 1
+		Call DLGFUSCFHandler_ResultListClicked
+	End If
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call DEBUGPrint("   Latest URL: " & SCFWSGetServerURL() & SCFWSGetLatestURL())
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFHandler_OKClicked - An Error Occured!")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function DLGFUSCFGetNumberOfMatchingRecords(  ByVal sValue As String
+									) As Integer
+
+Dim	nNumRows As Integer,
+	sCmd, sCond, sTabFile, sTab As String
+
+OnError GoTo ErrorOccured
+
+	'**TODO: Create a workflow that just returns the number of records matching the value, not the individual records
+
+	DLGFUSCFGetNumberOfMatchingRecords = nNumRows
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFGetNumberOfMatchingRecords")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGFUSCFHandler_ShowAllClicked
+
+Dim	sTab, sTabFile As String,
+	sDesc, sX, sY As String,
+	nMID, i As Integer,
+	symDefault As Symbol
+
+OnError GoTo ErrorOccured
+
+	If Ubound(marrResults) = 0 Then
+		Note "No current search result to show!"
+		Exit Sub
+	End If
+
+	sTab		= ReadControlValue(CTRL_TXT_SEARCH_FOR_VALUE)
+	sTab 	= STRINGReplace(sTab, "*", " ")
+	sTab 	= STRINGReplace(sTab, "%", " ")
+	sTab 	= STRINGReplace(sTab, "_", " ")
+	sTab 	= STRINGTrim(sTab)
+	sTab 	= STRINGReplace(sTab, "  ", " ")
+	sTab 	= STRINGReplace(sTab, "  ", " ")
+
+	sTabFile	= FileSaveAsDlg("", sTab, "TAB", "Please pick name and folder to save the current resultset")
+	If NOT sTabFile Then
+		Exit Sub
+	End If
+	sTab = PathToTableName$(sTabFile)
+
+	Create Table sTab
+		( SEARCHVALUE	Char(100)
+		, X			Float
+		, Y			Float
+		)
+		File sTabFile
+
+	'**"British National Grid\p27700", 8, 79, 7, -2, 49, 0.9996012717, 400000, -100000
+	'Create Map For sTab
+	'	CoordSys Earth Projection 8, 79, 7, -2, 49, 0.9996012717, 400000, -100000
+	'**"UTM Zone 32 Euref89\p25832", 8, 115, 7, 9.0, 0, 0.9996, 500000, 0
+	Create Map For sTab
+		CoordSys Earth Projection 8, 115, 7, 9.0, 0, 0.9996, 500000, 0
+
+	Call DEBUGPrint("Loading records...")
+	For i = 0 To (Ubound(marrResults) - 1)	'0-based array
+		sDesc 	= marrResults(i + 1)
+		sX		= SCFWSGetResultX(i)
+		sY		= SCFWSGetResultY(i)
+		Insert Into sTab
+			(SEARCHVALUE, X, Y)
+			Values
+			(sDesc, Val(sX), Val(sY))
+	Next
+	Call TABCommit(sTab)
+	Call DEBUGPrint(Ubound(marrResults) & " records loaded")
+
+	'**Creating Points
+	Set CoordSys Table sTab
+	symDefault	= CurrentSymbol()
+	Set Style Symbol DLGSCFCGetMarkerSymbol()
+	Update sTab
+		Set OBJ = CreatePoint(X, Y)
+	Set Style Symbol symDefault
+	Call TABCommit(sTab)
+
+	nMID	= MAPFrontMostWindow()
+	If nMID > 0 Then
+		Add Map
+			Window nMID
+			Layer sTab
+	Else
+		Map From sTab
+		nMID = FrontWindow()
+	End If
+
+	Set Map
+		Window nMID
+		Zoom Entire Layer sTab
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFHandler_ShowAllClicked")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGFUSCFHandler_ResultListClicked
+
+Dim	nNum, nMID As Integer,
+	fX, fY, fZoom As Float,
+	oPoint As Object
+
+OnError GoTo ErrorOccured
+
+	nNum	= ReadControlValue(CTRL_LST_RESULTS)
+	If nNum = 0 Then
+		Exit Sub
+	End If
+
+	nMID	= MAPFrontMostWindow()
+'	Set CoordSys Window nMID
+	'"British National Grid\p27700", 8, 79, 7, -2, 49, 0.9996012717, 400000, -100000
+	'Set CoordSys Earth Projection 8, 79, 7, -2, 49, 0.9996012717, 400000, -100000
+	'**"UTM Zone 32 Euref89\p25832", 8, 115, 7, 9.0, 0, 0.9996, 500000, 0
+	Set CoordSys Earth Projection 8, 115, 7, 9.0, 0, 0.9996, 500000, 0
+
+	nNum	= nNum - 1	'0-based arrays
+	fX	= Val(SCFWSGetResultX(nNum))
+	fY	= Val(SCFWSGetResultY(nNum))
+	fZoom	= ReadControlValue(CTRL_TXT_ZOOM)
+	If fZoom <= 0 Then
+		fZoom	= DLGSCFCGetZoom()
+	End If
+
+	Set Distance Units "m"
+
+	If MapperInfo(nMID, MAPPER_INFO_ZOOM) <> fZoom Then
+		Set Map
+			Window nMID
+			Zoom fZoom Units "m"
+	End If
+
+	Set Map
+		Window nMID
+		Center (fX, fY)
+
+	If DLGSCFCShowMarkerForSingleAddress() Then
+		Create Point
+			Into Variable oPoint
+			(fX, fY)
+			Symbol DLGSCFCGetMarkerSymbol()
+		Insert Into WindowInfo(nMID, WIN_INFO_TABLE)
+			(OBJ)
+			Values
+			(oPoint)
+	End If
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFHandler_ResultListClicked")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGFUSCFSetResultListWidth(ByVal nWidth As Integer)
+
+OnError GoTo ErrorOccured
+
+	mnResultListWidth	= nWidth
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFSetResultListWidth")
+	Call ERRShow()
+
+End Sub
+'**********************************************************************************************''
+Function DLGFUSCFGetResultListWidth() As Integer
+
+OnError GoTo ErrorOccured
+
+	If mnResultListWidth < 170 Then
+		mnResultListWidth = 170
+	End If
+
+	DLGFUSCFGetResultListWidth = mnResultListWidth
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFGetResultListWidth")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGFUSCFSetResultListHeight(ByVal nHeight As Integer)
+
+OnError GoTo ErrorOccured
+
+	mnResultListHeight	= nHeight
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFSetResultListHeight")
+	Call ERRShow()
+
+End Sub
+'**********************************************************************************************''
+Function DLGFUSCFGetResultListHeight() As Integer
+
+OnError GoTo ErrorOccured
+
+	If mnResultListHeight < 100 Then
+		mnResultListHeight = 100
+	End If
+
+	DLGFUSCFGetResultListHeight = mnResultListHeight
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFGetResultListHeight")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGFUSCFSetConfigFile(ByVal sFile As String)
+
+OnError GoTo ErrorOccured
+
+	msConfigFile	= sFile
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFSetConfigFile")
+	Call ERRShow()
+
+End Sub
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function DLGFUSCFGetConfigFile() As String
+
+OnError GoTo ErrorOccured
+
+	DLGFUSCFGetConfigFile = msConfigFile
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFGetConfigFile")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGFUSCFReadConfigFile()
+
+Dim	sFile, sFileUser, sValue As String
+
+OnError GoTo ErrorOccured
+
+	If DLGFUSCFGetConfigFile() = "" Then
+		Note "Configuration file named not specified!"
+		Exit Sub
+	End If
+
+	sFileUser	= GetFolderPath$(FOLDER_MI_PREFERENCE) & DLGFUSCFGetConfigFile()
+	sFile	= ApplicationDirectory$() & DLGFUSCFGetConfigFile()
+
+	Call DEBUGPrint("Reading defaults from " & sFile)
+	'**GENERAL VALUES
+	sValue = CONFIGReadKey(sFile, "CUSTOMSPECTRUMFIND", "WIDTH")
+	Call DLGFUSCFSetResultListWidth(Val(sValue))
+	sValue = CONFIGReadKey(sFile, "CUSTOMSPECTRUMFIND", "HEIGHT")
+	Call DLGFUSCFSetResultListHeight(Val(sValue))
+	sValue = CONFIGReadKey(sFile, "CUSTOMSPECTRUMFIND", "MAXRECORDS")
+	Call DLGFUSCFSetMaximumMatchNumber(Val(sValue))
+
+	sValue = CONFIGReadKey(sFile, "CUSTOMSPECTRUMFIND", "URL")
+	Call DLGSCFCSetURL(sValue)
+	sValue = CONFIGReadKey(sFile, "CUSTOMSPECTRUMFIND", "USERNAME")
+	Call DLGSCFCSetUsername(sValue)
+	sValue = CONFIGReadKey(sFile, "CUSTOMSPECTRUMFIND", "PASSWORD")
+	Call DLGSCFCSetPassword(sValue)
+	sValue = CONFIGReadKey(sFile, "CUSTOMSPECTRUMFIND", "ZOOMWIDTH")
+	Call DLGSCFCSetZoom(Val(sValue))
+	sValue = CONFIGReadKey(sFile, "CUSTOMSPECTRUMFIND", "MARKERSYMBOL")
+	If sValue = "" Then
+		Call DLGSCFCSetMarkerSymbol(MakeCustomSymbol("GuitarPick_2C.png",16744448,16,0))
+	Else
+		Call DLGSCFCSetMarkerSymbol(STLText2Symbol(sValue))
+	End If
+	sValue = CONFIGReadKey(sFileUser, "CUSTOMSPECTRUMFIND", "USE_MARKER_SINGLE_ADDRESS")
+	Call DLGSCFCSetShowMarkerForSingleAddress((sValue = "1"))
+
+	If FileExists(sFileUser) Then
+		Call DEBUGPrint("Reading user settings from " & sFileUser)
+		sValue = CONFIGReadKey(sFileUser, "CUSTOMSPECTRUMFIND", "URL")
+		If sValue <> "" Then
+			Call DLGSCFCSetURL(sValue)
+		End If
+		sValue = CONFIGReadKey(sFileUser, "CUSTOMSPECTRUMFIND", "USERNAME")
+		If sValue <> "" Then
+			Call DLGSCFCSetUsername(sValue)
+		End If
+		sValue = CONFIGReadKey(sFileUser, "CUSTOMSPECTRUMFIND", "PASSWORD")
+		If sValue <> "" Then
+			Call DLGSCFCSetPassword(sValue)
+		End If
+		sValue = CONFIGReadKey(sFileUser, "CUSTOMSPECTRUMFIND", "ZOOMWIDTH")
+		If sValue <> "" Then
+			Call DLGSCFCSetZoom(Val(sValue))
+		End If
+		sValue = CONFIGReadKey(sFileUser, "CUSTOMSPECTRUMFIND", "MARKERSYMBOL")
+		If sValue <> "" Then
+			Call DLGSCFCSetMarkerSymbol(STLText2Symbol(sValue))
+		End If
+
+		sValue = CONFIGReadKey(sFileUser, "CUSTOMSPECTRUMFIND", "USE_MARKER_SINGLE_ADDRESS")
+		If sValue <> "" Then
+			Call DLGSCFCSetShowMarkerForSingleAddress((sValue = "1"))
+		End If
+
+		sValue = CONFIGReadKey(sFileUser, "CUSTOMSPECTRUMFIND", "SEARCHFOR_REMEMBER")
+		If sValue <> "" Then
+			Call DLGSCFCSetRememberSearchValues((sValue = "1"))
+		End If
+
+		If DLGSCFCRememberSearchValues() Then
+			sValue = CONFIGReadKey(sFileUser, "CUSTOMSPECTRUMFIND", "SEARCHFOR_VALUE")
+			Call DLGFUSCFSetValueToSearchFor(sValue)
+		End If
+	End If
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFReadConfigFile")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGFUSCFWriteConfigFile()
+
+Dim	sFile As String
+
+OnError GoTo ErrorOccured
+
+	sFile	= GetFolderPath$(FOLDER_MI_PREFERENCE) & DLGFUSCFGetConfigFile()
+	Call CONFIGWriteKey(sFile, "CUSTOMSPECTRUMFIND", "URL", DLGSCFCGetURL())
+	Call CONFIGWriteKey(sFile, "CUSTOMSPECTRUMFIND", "USERNAME", DLGSCFCGetUsername())
+	Call CONFIGWriteKey(sFile, "CUSTOMSPECTRUMFIND", "PASSWORD", DLGSCFCGetPassword())
+	Call CONFIGWriteKey(sFile, "CUSTOMSPECTRUMFIND", "ZOOMWIDTH", DLGSCFCGetZoom())
+	Call CONFIGWriteKey(sFile, "CUSTOMSPECTRUMFIND", "MARKERSYMBOL", STLSymbol2Text(DLGSCFCGetMarkerSymbol()))
+
+	Call CONFIGWriteKey(sFile, "CUSTOMSPECTRUMFIND", "USE_MARKER_SINGLE_ADDRESS", STRINGLogicalToText(DLGSCFCShowMarkerForSingleAddress(), "1", "0"))
+	Call CONFIGWriteKey(sFile, "CUSTOMSPECTRUMFIND", "SEARCHFOR_REMEMBER", STRINGLogicalToText(DLGSCFCRememberSearchValues(), "1", "0"))
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFWriteConfigFile")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGFUSCFEndHandler
+
+Dim	sFile As String
+
+OnError GoTo ErrorOccured
+
+	sFile	= GetFolderPath$(FOLDER_MI_PREFERENCE) & DLGFUSCFGetConfigFile()
+	If DLGSCFCRememberSearchValues() Then
+		Call CONFIGWriteKey(sFile, "CUSTOMSPECTRUMFIND", "SEARCHFOR_VALUE", DLGFUSCFGetValueToSearchFor())
+	Else
+		Call CONFIGWriteKey(sFile, "CUSTOMSPECTRUMFIND", "SEARCHFOR_VALUE", "")
+	End If
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFEndHandler")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGFUSCFSetMaximumMatchNumber(ByVal nMaxMatches As Integer)
+
+OnError GoTo ErrorOccured
+
+	mnMaximumMatchNumber = nMaxMatches
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFSetMaximumMatchNumber")
+	Call ERRShow()
+
+End Sub
+'**********************************************************************************************''
+Function DLGFUSCFGetMaximumMatchNumber() As Integer
+
+OnError GoTo ErrorOccured
+
+	If mnMaximumMatchNumber = 0 Then
+		mnMaximumMatchNumber	= 1000
+	End If
+	DLGFUSCFGetMaximumMatchNumber = mnMaximumMatchNumber
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFGetMaximumMatchNumber")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGFUSCFSetValueToSearchFor(ByVal sValue As String)
+
+OnError GoTo ErrorOccured
+
+	msValueToSearchFor = sValue
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFSetValueToSearchFor")
+	Call ERRShow()
+
+End Sub
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function DLGFUSCFGetValueToSearchFor() As String
+
+OnError GoTo ErrorOccured
+
+	DLGFUSCFGetValueToSearchFor = msValueToSearchFor
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGFUSCFGetValueToSearchFor")
+	Call ERRShow()
+
+End Function
+

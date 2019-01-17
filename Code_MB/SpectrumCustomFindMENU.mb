@@ -1,0 +1,245 @@
+'*******************************************************************************
+'**   Created by Peter Horsbøll Møller, Pitney Bowes Software
+'** 	Program:
+'** 	Modul:
+'**
+'*******************************************************************************
+
+'-------------------------------------
+Include "MapBasic.def"
+Include "Enums.def"
+Include "Icons.def"
+Include "Menu.def"
+'**default constants...
+Include "Library\Defaults.def"
+Include "Library\MI_ICONS_X64.def"
+Include "Library\RibbonElements.def"
+
+Define xProgram 		"SpectrumCustomFind"
+Define xProgramMenu		"SpectrumCustomFind"
+Define xVersion 		"1.0"
+Define xYear			"2018"
+Define xAddToMenuBar	FALSE
+
+Define FILE_INI			xProgram & ".ini"
+Define FILE_DBG			ApplicationDirectory$() & xProgram & ".dbg"
+'Define FILE_DLL			ApplicationDirectory$() & xProgram & ".dll"
+Define FILE_PAD			GetFolderPath$(FOLDER_MI_PREFERENCE) & xProgram & ".btp"
+Define PATH_IMAGES			ApplicationDirectory$() & "Images\"
+Define FILE_IMAGE			PATH_IMAGES & "SearchMultiple_32.png"
+Define FILE_HLP			ApplicationDirectory$() & xProgram & ".pdf"
+'-------------------------------------
+Include "Library\CONFIGFILELib.def"
+Include "Library\DEBUGLib.def"
+Include "Library\ERRORLib.def"
+Include "Library\ProgramInfo.def"
+Include "Library\RIBBONLib.def"
+Include "Library\TABLELib.def"
+
+Include "DLGFindUsingSpectrumCustomFind.def"
+Include "DLGSpectrumCustomFindConfiguration.def"
+Include "SearchUsingServices.def"
+
+'-----------------------------------------------------------------------------------------
+Declare Sub Main
+Declare Sub MENUBuildRibbonInterface
+Declare Sub EndProgram
+Declare Sub EndHandler
+
+Declare Sub MENUSearch
+
+Declare Sub MENUConfigureCustomFind
+Declare Sub MENUReadUKAddressbaseConfigFile
+
+'**********************************************************************************************''
+'**   Created by Peter Horsbøll Møller, Pitney Bowes Software
+'
+'**********************************************************************************************''
+Sub Main
+
+OnError GoTo ErrorOccured
+
+'	If NOT SystemInfo(SYS_INFO_MAPINFO_INTERFACE) = MIINTERFACE_RIBBON Then
+'		Note "Please note that this tool was build for MapInfo Pro 64 bit only!"
+'		End Program
+'	End If
+
+	'***Initializing ApplicationInfo
+	Call PRGISetApplicationName(xProgram)
+	Call PRGISetApplicationVersion(xVersion)
+	Call PRGISetApplicationCopyrightYear(xYear)
+	'Call PRGISetApplicationDevelopedBy("Peter Horsbøll Møller")
+	Call PRGISetDescription("This tool lets you search a custom dataflow using a Spectrum service.")
+	Call PRGISetApplicationImageUri(FILE_IMAGE)
+	Call PRGISetApplicationHelpFile(FILE_HLP)
+	Call PRGISetWebPageName("pitneybowes.com/uk")
+	Call PRGISetWebPageURL("http://www.pitneybowes.com/uk")
+
+	'***Enabling Debug if file exists
+	Call DEBUGEnableByFile(FILE_DBG)
+
+	Call DLGFUSCFSetConfigFile(FILE_INI)
+'
+	If SystemInfo(SYS_INFO_MAPINFO_INTERFACE) = MIINTERFACE_RIBBON Then
+		Call MENUBuildRibbonInterface
+	Else
+		Create Menu xProgramMenu As
+			"Search using Spectrum Web Service.../W#^F"
+				HelpMsg "Locate data using a custom Spectrum Web Service"
+				Calling MENUSearch,
+			"Configure Spectrum Custom Find..."
+				HelpMsg "Configure Spectrum Custom Find"
+				Calling MENUConfigureCustomFind,
+			"(-",
+			"End program"
+				Calling EndProgram,
+			"About..."
+				Calling PRGIAboutbox
+
+		If xAddToMenuBar Then
+			'Remove the Window menu and Help menu
+			Alter Menu Bar Remove ID 6, ID 7
+			'Add the custom menu, then the Window & Help menus
+			Alter Menu Bar Add xProgramMenu, ID 6, ID 7
+		Else
+			Alter Menu ID 4
+				Add "(-", xProgramMenu  As xProgramMenu
+		End If
+	End If
+
+	Call DLGFUSCFReadConfigFile()
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "Main")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub MENUBuildRibbonInterface
+
+Dim	nCtrlIdx As Integer,
+	sTabName, sGroupName, sSplitButtonName, sSplitButtonGroupName As String
+
+OnError GoTo ErrorOccured
+
+	sTabName				= "TabMap"
+	sGroupName			= "MapSelection"
+	sSplitButtonName		= "MapFindSplitButton"
+     sSplitButtonGroupName	= "MapFindSplitButtonGroup"
+
+	nCtrlIdx = RBNSplitButtonGroupAddControl("cmdCustomFind", "Custom Find", "Ctrl + Shift + F", ControlType_Button, sTabName, sGroupName, sSplitButtonName, sSplitButtonGroupName)
+	If nCtrlIdx > 0 Then
+		'Create & Set the button tooltip
+		Call RBNControlSetToolTipIdx(nCtrlIdx, PRGIGetApplicationName(), "Find records using a custom Spectrum Web Service", "")
+		'Set the button icon
+		Call RBNControlSetIconsIdx(nCtrlIdx, CONTROL_SIZE_LARGE, "", PATH_IMAGES & "SearchMultiple_32.png")
+		'Set Custom MapBasic Handle to the button
+		Call RBNControlSetCustomMBXHandlerIdx(nCtrlIdx, "MENUSearch")
+	End If
+
+	nCtrlIdx	= RBNToolContextMenuAddMenuItem("cmdConfigCustomFind", "Configure custom Spectrum Web Service", "")
+	If nCtrlIdx > 0 Then
+		'Create & Set the button tooltip
+		Call RBNControlSetToolTipIdx(nCtrlIdx, PRGIGetApplicationName(), "Configure the custom Spectrum Web Service", "")
+		Call RBNControlSetLeftMarginIdx(nCtrlIdx, 0)
+		'Set Custom MapBasic Handle to the button
+		Call RBNControlSetCustomMBXHandlerIdx(nCtrlIdx, "MENUConfigureCustomFind")
+	End If
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "MENUBuildRibbonInterface")
+	Call ERRShow()
+
+End Sub
+
+'****************************************
+'**   Created by Peter Horsbøll Møller, Pitney Bowes Software
+'**   Ending MapBasic application
+'****************************************
+Sub EndProgram
+
+OnError GoTo ErrorOccured
+
+	End Program
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "EndProgram")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub EndHandler
+
+OnError GoTo ErrorOccured
+
+	Call DLGFUSCFEndHandler
+
+	If SystemInfo(SYS_INFO_MAPINFO_INTERFACE) = MIINTERFACE_RIBBON Then
+		Call RBNEndHandler
+	End If
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "EndHandler")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub MENUSearch
+
+OnError GoTo ErrorOccured
+
+	If DLGFindUsingSpectrumCustomFind() Then
+
+	End If
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "MENUSearch")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub MENUConfigureCustomFind
+
+OnError GoTo ErrorOccured
+
+	If DLGSpectrumCustomFindConfiguration() Then
+'		Print "Writing settings"
+		Call DLGFUSCFWriteConfigFile
+	End If
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "MENUConfigureCustomFind")
+	Call ERRShow()
+
+End Sub
+

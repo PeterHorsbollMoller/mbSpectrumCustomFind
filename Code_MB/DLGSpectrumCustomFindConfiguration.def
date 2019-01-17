@@ -1,0 +1,21 @@
+Declare Function DLGSpectrumCustomFindConfiguration() As Logical
+
+Declare Function DLGSCFCGetURL() As String
+Declare Sub DLGSCFCSetURL(ByVal sURL As String)
+
+Declare Function DLGSCFCGetUserName() As String
+Declare Sub DLGSCFCSetUserName(ByVal sUserName As String)
+Declare Function DLGSCFCGetPassword() As String
+Declare Sub DLGSCFCSetPassword(ByVal sPassword As String)
+
+Declare Sub DLGSCFCSetZoom(ByVal fZoom As Float)
+Declare Function DLGSCFCGetZoom() As Float
+
+Declare Sub DLGSCFCSetMarkerSymbol(ByVal symMarker As Symbol)
+Declare Function DLGSCFCGetMarkerSymbol() As Symbol
+
+Declare Sub DLGSCFCSetRememberSearchValues(ByVal bValue As Logical)
+Declare Function DLGSCFCRememberSearchValues() As Logical
+
+Declare Sub DLGSCFCSetShowMarkerForSingleAddress(ByVal bValue As Logical)
+Declare Function DLGSCFCShowMarkerForSingleAddress() As Logical
