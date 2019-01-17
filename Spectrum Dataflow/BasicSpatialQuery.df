@@ -1,0 +1,62 @@
+<!--Exported Thu Jan 17 11:20:39 CET 2019 by admin from DK-FB5BYF2-10--><exportedDataflow schema_version="9.0"><exposed>false</exposed><dataflow id="BasicSpatialQuery" schema_version="9.0" version=""><product_group/><channels><channel id="629f0964-30d4-4600-9d59-354a505766ff"><field_transformers/></channel><channel id="30b6189e-8b97-4940-b5b6-c4b643d67232"><field_transformers/></channel></channels><created_by>admin</created_by><created_date>20-11-18 10:21</created_date><service_exposures><soap_service_exposure/><rest_service_exposure><base_path/><resources><resource><method>GET</method><input_adapter/><output_adapter>XML</output_adapter><qualifier_path>results.xml</qualifier_path></resource><resource><method>GET</method><input_adapter/><output_adapter>JSON</output_adapter><qualifier_path>results.json</qualifier_path></resource></resources></rest_service_exposure></service_exposures><icon/><inputs><input id="30baa416-a9fd-463a-9efd-e8571e888041"><metadata><name>Row</name><field><name>SearchValue</name><required>false</required><type>string</type></field></metadata><label>Input</label><output_port id="0a5353b3-dd47-4e6d-abd4-cd4a1897864f"><channel idref="30b6189e-8b97-4940-b5b6-c4b643d67232"/><label>output port</label><port_name>output_port</port_name></output_port><properties/></input></inputs><last_modified_by>admin</last_modified_by><last_modified_date>20-11-18 11:48</last_modified_date><outputs><output id="2c2c9d8e-a886-4492-8ce1-923cfab83e62"><metadata><name>Row</name><field><name>VALUE</name><required>false</required><type>string</type></field><field><name>CENTROID</name><required>false</required><type>string</type></field><field><name>ENVELOPE</name><required>false</required><type>string</type></field><field><name>X</name><required>false</required><type>double</type></field><field><name>Y</name><required>false</required><type>double</type></field></metadata><input_port id="1bfea2ca-aeab-4257-a640-111f2fff13a9"><channel idref="629f0964-30d4-4600-9d59-354a505766ff"/><label>input port</label><port_name>input_port</port_name></input_port><label>Output</label><properties/></output></outputs><properties><property><name>ViewData</name><value><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<viewData version="3.0">
+  <canvasNode id="2c2c9d8e-a886-4492-8ce1-923cfab83e62">
+    <location x="972.0001" y="146" />
+  </canvasNode>
+  <canvasNode id="30baa416-a9fd-463a-9efd-e8571e888041">
+    <location x="238" y="146" />
+  </canvasNode>
+  <canvasNode id="1ac1e020-fa16-4ba4-877b-66ebfac5dcbe">
+    <location x="582" y="248" />
+  </canvasNode>
+  <canvasLink fromPortID="0a5353b3-dd47-4e6d-abd4-cd4a1897864f" toPortID="103d4ff7-227a-4d50-ad77-114a57dc625a" />
+  <canvasLink fromPortID="620fc6bc-af52-442c-92e7-99478155a503" toPortID="1bfea2ca-aeab-4257-a640-111f2fff13a9" />
+</viewData>]]></value></property></properties><stages><stage id="1ac1e020-fa16-4ba4-877b-66ebfac5dcbe"><stage_name>QuerySpatial</stage_name><stage_version/><label>Query Spatial Data</label><num_instances>1</num_instances><distributed>false</distributed><batch_size>10000</batch_size><settings><![CDATA[<spatial_source_settings>
+  <data_source />
+  <coord_system>No transform selected</coord_system>
+  <first_record_number>1</first_record_number>
+  <max_rows>0</max_rows>
+  <fields>
+    <field>
+      <name>VALUE</name>
+      <type>string</type>
+      <alias>VALUE</alias>
+      <include>True</include>
+    </field>
+    <field>
+      <name>CENTROID</name>
+      <type>string</type>
+      <alias>CENTROID</alias>
+      <include>True</include>
+    </field>
+    <field>
+      <name>ENVELOPE</name>
+      <type>string</type>
+      <alias>ENVELOPE</alias>
+      <include>True</include>
+    </field>
+    <field>
+      <name>X</name>
+      <type>double</type>
+      <alias>X</alias>
+      <include>True</include>
+    </field>
+    <field>
+      <name>Y</name>
+      <type>double</type>
+      <alias>Y</alias>
+      <include>True</include>
+    </field>
+  </fields>
+  <where_clause />
+  <misql_query>Select ADDRESS_POSTAL As VALUE
+, ToGeoJSON(MI_Centroid(OBJ)) As CENTROID
+, ToGeoJSON(MI_Envelope(OBJ)) AS ENVELOPE
+, MI_CentroidX(OBJ) As X
+, MI_CentroidY(OBJ) As Y
+From "/Demo/Maps/Denmark/Odense Kommune/adressepunkter_View"
+Where Upper(ADDRESS_POSTAL) Like Upper(${SearchValue})</misql_query>
+  <executing_query />
+  <sort_columns />
+  <version>1</version>
+</spatial_source_settings>]]></settings><input_ports><input_port id="103d4ff7-227a-4d50-ad77-114a57dc625a"><channel idref="30b6189e-8b97-4940-b5b6-c4b643d67232"/><label>input_port</label><port_name>input_port</port_name></input_port></input_ports><options/><output_ports><output_port id="620fc6bc-af52-442c-92e7-99478155a503"><channel idref="629f0964-30d4-4600-9d59-354a505766ff"/><label>output_port</label><port_name>output_port</port_name></output_port></output_ports><properties><property><name>ViewData</name><value/></property><property><name>stageItemName</name><value><![CDATA[QuerySpatial]]></value></property></properties></stage></stages><reports/><notifications/><dataflow_options/><type>1</type><vendor/></dataflow></exportedDataflow>
