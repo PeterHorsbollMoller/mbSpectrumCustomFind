@@ -18,3 +18,4 @@ Module=Library\TABLELib.mbo
 Module=SpectrumCustomFindMENU.mb
 Module=DLGFindUsingSpectrumCustomFind.mbo
 Module=DLGSpectrumCustomFindConfiguration.mbo
+Module=DLGSpectrumFindUsingBufferConfiguration.mbo

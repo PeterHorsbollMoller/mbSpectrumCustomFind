@@ -209,7 +209,7 @@ OnError GoTo ErrorOccured
 	Call DLGFUSCFSetValueToSearchFor(ReadControlValue(CTRL_TXT_SEARCH_FOR_VALUE))
 
 	'**Web Service settings are passed to the .NET assembly
-	Call SCFWSInitiate(20, DLGSCFCGetURL(), DLGSCFCGetUserName(), DLGSCFCGetPassword())
+	Call SCFWSInitiate(20000, DLGSCFCGetURL(), DLGSCFCGetUserName(), DLGSCFCGetPassword())
 
 	'**Checking length of the search string
 	If Len(DLGFUSCFGetValueToSearchFor()) Between 1 AND 3 Then
@@ -223,7 +223,7 @@ OnError GoTo ErrorOccured
 	nNumMatchFound = SCFWSDoSearch(DLGFUSCFGetValueToSearchFor())
 	Call DEBUGPrint("   Result returned...")
 
-	Call DEBUGPrint("   Server URL: " & SCFWSGetLatestURL())
+	Call DEBUGPrint("   Server URL: " & SCFWSGetServerURL())
 	Call DEBUGPrint("   Latest Request URL: " & SCFWSGetLatestURL())
 	'**Checking the number of found records
 	If nNumMatchFound = -1 Then

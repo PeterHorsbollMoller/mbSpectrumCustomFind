@@ -17,8 +17,8 @@ Include "Library\RibbonElements.def"
 
 Define xProgram 		"SpectrumCustomFind"
 Define xProgramMenu		"SpectrumCustomFind"
-Define xVersion 		"1.0"
-Define xYear			"2018"
+Define xVersion 		"1.5"
+Define xYear			"2019"
 Define xAddToMenuBar	FALSE
 
 Define FILE_INI			xProgram & ".ini"
@@ -38,6 +38,8 @@ Include "Library\TABLELib.def"
 
 Include "DLGFindUsingSpectrumCustomFind.def"
 Include "DLGSpectrumCustomFindConfiguration.def"
+Include "DLGSpectrumFindUsingBufferConfiguration.def"
+
 Include "SearchUsingServices.def"
 
 '-----------------------------------------------------------------------------------------
@@ -47,9 +49,10 @@ Declare Sub EndProgram
 Declare Sub EndHandler
 
 Declare Sub MENUSearch
+Declare Sub MENUSearchUsingPoint
 
 Declare Sub MENUConfigureCustomFind
-Declare Sub MENUReadUKAddressbaseConfigFile
+Declare Sub MENUConfigureBufferFind
 
 '**********************************************************************************************''
 '**   Created by Peter Horsbøll Møller, Pitney Bowes Software
@@ -79,6 +82,7 @@ OnError GoTo ErrorOccured
 	Call DEBUGEnableByFile(FILE_DBG)
 
 	Call DLGFUSCFSetConfigFile(FILE_INI)
+	Call DLGSFUBCSetConfigFile(FILE_INI)
 '
 	If SystemInfo(SYS_INFO_MAPINFO_INTERFACE) = MIINTERFACE_RIBBON Then
 		Call MENUBuildRibbonInterface
@@ -90,6 +94,9 @@ OnError GoTo ErrorOccured
 			"Configure Spectrum Custom Find..."
 				HelpMsg "Configure Spectrum Custom Find"
 				Calling MENUConfigureCustomFind,
+			"Configure Spectrum Buffer Find..."
+				HelpMsg "Configure Spectrum Buffer Find"
+				Calling MENUConfigureBufferFind,
 			"(-",
 			"End program"
 				Calling EndProgram,
@@ -108,6 +115,7 @@ OnError GoTo ErrorOccured
 	End If
 
 	Call DLGFUSCFReadConfigFile()
+	Call DLGSFUBCReadConfigFile
 
 	Exit Sub
 '-------------------------
@@ -143,6 +151,17 @@ OnError GoTo ErrorOccured
 		'Set Custom MapBasic Handle to the button
 		Call RBNControlSetCustomMBXHandlerIdx(nCtrlIdx, "MENUSearch")
 	End If
+	nCtrlIdx = RBNSplitButtonGroupAddControl("cmdFindUsingPoint", "Find Using Point", "", ControlType_ToolButton, sTabName, sGroupName, sSplitButtonName, sSplitButtonGroupName)
+	If nCtrlIdx > 0 Then
+		'Create & Set the button tooltip
+		Call RBNControlSetToolTipIdx(nCtrlIdx, PRGIGetApplicationName(), "Find records around a point using a custom Spectrum Web Service", "")
+		'Set the button icon
+		Call RBNControlSetIconsIdx(nCtrlIdx, CONTROL_SIZE_LARGE, MI_IMG_SPA_SETTARGET_16, MI_IMG_SPA_SETTARGET_32)
+		'Set Custom MapBasic Handle to the button
+		Call RBNControlSetCustomMBXHandlerIdx(nCtrlIdx, "MENUSearchUsingPoint")
+		Call RBNControlSetDrawModeIdx(nCtrlIdx, DM_CUSTOM_CIRCLE)
+		Call RBNControlSetMICursorIdx(nCtrlIdx, MI_CURSOR_FINGER_LEFT, "")
+	End If
 
 	nCtrlIdx	= RBNToolContextMenuAddMenuItem("cmdConfigCustomFind", "Configure custom Spectrum Web Service", "")
 	If nCtrlIdx > 0 Then
@@ -151,6 +170,15 @@ OnError GoTo ErrorOccured
 		Call RBNControlSetLeftMarginIdx(nCtrlIdx, 0)
 		'Set Custom MapBasic Handle to the button
 		Call RBNControlSetCustomMBXHandlerIdx(nCtrlIdx, "MENUConfigureCustomFind")
+	End If
+
+	nCtrlIdx	= RBNToolContextMenuAddMenuItem("cmdConfigBufferFind", "Configure Buffer Spectrum Web Service", "")
+	If nCtrlIdx > 0 Then
+		'Create & Set the button tooltip
+		Call RBNControlSetToolTipIdx(nCtrlIdx, PRGIGetApplicationName(), "Configure the Buffer Spectrum Web Service", "")
+		Call RBNControlSetLeftMarginIdx(nCtrlIdx, 0)
+		'Set Custom MapBasic Handle to the button
+		Call RBNControlSetCustomMBXHandlerIdx(nCtrlIdx, "MENUConfigureBufferFind")
 	End If
 
 	Exit Sub
@@ -222,6 +250,147 @@ ErrorOccured:
 End Sub
 
 '**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes
+'Parameters:
+'
+'**********************************************************************************************''
+Sub MENUSearchUsingPoint
+
+Dim	fXCenter, fYCenter, fXMin, fYMin, fXMax, fYMax, fDistance, fRadius As Float,
+	nNumFound, i As Integer,
+	sPath, sName, sAreaName As String
+
+OnError GoTo ErrorOccured
+
+	Set CoordSys Earth Projection 1, 104
+	fXMin	= CommandInfo(CMD_INFO_X)
+	fYMin	= CommandInfo(CMD_INFO_Y)
+	fXMax	= CommandInfo(CMD_INFO_X2)
+	fYMax	= CommandInfo(CMD_INFO_Y2)
+	fXCenter	= (fXMin + fXMax) / 2
+	fYCenter	= (fYMin + fYMax) / 2
+
+	fRadius	= Distance(fXCenter, fYCenter, fXMax, fYCenter, "m")
+
+	Call DEBUGPrint("Search at (" & FormatNumber$(fXCenter) & " ;" & FormatNumber$(fYCenter) & ") | " & FormatNumber$(fRadius) & " m.")
+
+	Call SMFWSInitiate(20000, DLGSFUBCGetURL(), DLGSFUBCGetUserName(), DLGSFUBCGetPassword())
+
+	nNumFound = SMFWSDoSearch(Str$(fXCenter), Str$(fYCenter), Str$(fRadius), "EPSG:4326")
+	Call DEBUGPrint("Latest URL: " & SMFWSGetLatestURL())
+	If nNumFound > 0 Then
+		Call TABDrop("__StoresFound")
+		Call TABDrop("__SpiderGraph")
+		Call TABDrop("__SearchArea")
+
+		Set Progressbars Off
+
+		'**Creating temporary tables
+		sPath	= PathToDirectory$(TempFileName$(""))
+		Create Table __StoresFound
+			( Name Char(100)
+			, AddressLine Char(100)
+			, Postal Char(20)
+			, AreaName Char(50)
+			, Distance_m Float
+			, X	Float
+			, Y  Float)
+			File sPath & "__StoresFound.tab"
+		Create Map For __StoresFound
+			CoordSys Earth Projection 1, 104
+
+		Create Table __SpiderGraph
+			( Name Char(100)
+			, X1	Float
+			, Y1  Float
+			, X2  Float
+			, Y2  Float
+			, Distance_m Float)
+			File sPath & "__SpiderGraph.tab"
+		Create Map For __SpiderGraph
+			CoordSys Table __StoresFound
+
+		Create Table __SearchArea
+			( X	Float
+			, Y  Float
+			, Distance_m Float)
+			File sPath & "__SearchArea.tab"
+		Create Map For __SearchArea
+			CoordSys Table __StoresFound
+
+
+		'**Inserting the Search Area
+		Insert Into __SearchArea
+			(X, Y, Distance_m, OBJ)
+			Values
+			(fXCenter, fYCenter, fRadius, Buffer(CreatePoint(fXCenter, fYCenter), 36, fRadius, "m"))
+		Commit Table __SearchArea
+
+		OnError Goto NextRecord
+		For i = 0 To (nNumFound - 1)
+			sName	= SMFWSGetName(i)
+			sAreaName	= SMFWSGetAreaname(i)
+			Call DEBUGPrint((i + 1) & ": " & sName & ", " & sAreaName)
+			fXMax	= SMFWSGetResultX(i)
+			fYMax	= SMFWSGetResultY(i)
+
+			fDistance	= Distance(fXCenter, fYCenter, fXMax, fYMax, "m")
+
+			'**Inserting the Stores found
+			Insert Into __StoresFound
+				(Name, AddressLine, Postal, AreaName, X, Y, Distance_m, OBJ)
+				Values
+				(sName & ", " & sAreaName, SMFWSAddressline(i), SMFWSZipcode(i), sAreaName, fXMax, fYMax, fDistance, CreatePoint(fXMax, fYMax))
+
+			'**Inserting the SpiderGraph
+			Insert Into __SpiderGraph
+				(Name, X1, Y1, X2, Y2, Distance_m, OBJ)
+				Values
+				(sName & ", " & sAreaName, fXCenter, fYCenter, fXMax, fYMax, fDistance, CreateLine(fXCenter, fYCenter, fXMax, fYMax))
+
+			'-------------------------
+			NextRecord:
+		Next
+		OnError GoTo ErrorOccured
+
+		Commit Table __StoresFound
+		Commit Table __SpiderGraph
+		Set Progressbars On
+
+		Add Map
+			Layer __StoresFound, __SpiderGraph, __SearchArea
+'			DestGroupLayer "Stores At Point"
+		Set Map
+			Layer __StoresFound
+				Display Global Global Symbol DLGSFUBCGetStoreSymbol()		'(46, 16776960, 12, "MapInfo Cartographic", 0, 0)
+				FriendlyName "Stores Found in Area"
+			Layer __SpiderGraph
+				Display Global Global Line DLGSFUBCGetSpiderGraphPen()		'(2, 3, 16744448)
+				FriendlyName "Spider Graph from Center"
+			Layer __SearchArea
+				Display Global Global Pen DLGSFUBCGetBufferPen()		'(3, 9, RED)
+							Global Brush DLGSFUBCGetBufferBrush()	'(1, 0, 0)
+				FriendlyName "Search Area - " & FormatNumber$(Round(fRadius, 1)) & " meter radius"
+
+	Else
+		Call RBNNotificationShowAtCursor("Search for Stores", "No stores found near this location", Notify_Info, 2500)
+	End If
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "MENUSearchUsingPoint")
+	Call ERRShow()
+
+	Exit Sub
+'-------------------------
+ErrorAtRecord:
+	Print "Error at record " & sName & ", " & sAreaName
+	Resume NextRecord
+
+End Sub
+
+'**********************************************************************************************''
 'Created by Peter Horsbøll Møller, Pitney Bowes Software
 'Parameters:
 '
@@ -243,3 +412,24 @@ ErrorOccured:
 
 End Sub
 
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub MENUConfigureBufferFind
+
+OnError GoTo ErrorOccured
+
+	If DLGSpectrumFindUsingBufferConfig() Then
+'		Print "Writing settings"
+		Call DLGSFUBCWriteConfigFile
+	End If
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "MENUConfigureBufferFind")
+	Call ERRShow()
+
+End Sub

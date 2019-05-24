@@ -1,0 +1,499 @@
+﻿'*******************************************************************************
+'** 	Created By Peter Horsbøll Møller, Pitney Bowes Business Insight
+'** 	Program:
+'** 	Modul:
+'**
+'*******************************************************************************
+
+'-------------------------------------
+Include "MapBasic.def"
+Include "Icons.def"
+Include "Menu.def"
+'**default constants...
+Include "Library\Defaults.def"
+
+'-------------------------------------
+Include "Library\CONFIGFILELib.def"
+Include "Library\DEBUGLib.def"
+Include "Library\ERRORLib.def"
+Include "Library\STYLELib.def"
+Include "Library\TABLELib.def"
+
+Include "DLGSpectrumFindUsingBufferConfiguration.def"
+
+Define	CTRL_TXT_URL 			100
+Define	CTRL_TXT_USERNAME		200
+Define	CTRL_TXT_PASSWORD		300
+Define	CTRL_TXT_ZOOM			400
+Define	CTRL_SYM_STORE			500
+Define	CTRL_PEN_SPIDERGRAPH	510
+Define	CTRL_PEN_BUFFER		520
+Define	CTRL_BRS_BUFFER		525
+
+Declare Sub DLGSFUBC_OKClicked
+
+Dim	msURL, msUsername, msPassword As String,
+	mfZoom As Float,
+	msymStore As Symbol,
+	mpenSpiderGraph, mpenBuffer As Pen,
+	mbrsBuffer As Brush,
+	msConfigFile As String
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function DLGSpectrumFindUsingBufferConfig() As Logical
+
+OnError GoTo ErrorOccured
+
+DLGSpectrumFindUsingBufferConfig = FALSE
+
+	Dialog
+		Title "Find Using Buffer Settings"
+
+		Control StaticText		Position 5,5
+			Width 300
+			Title "URL"
+		Control EditText		Position 5,15		ID CTRL_TXT_URL
+			Width 300
+			Value DLGSFUBCGetURL()
+
+		Control StaticText		Position 5,30
+			Width 145
+			Title "Username"
+		Control EditText		Position 5,40		ID CTRL_TXT_USERNAME
+			Width 145
+			Value DLGSFUBCGetUsername()
+		Control StaticText		Position 155,30
+			Width 145
+			Title "Password"
+		Control EditText		Position 155,40	ID CTRL_TXT_PASSWORD
+			Width 145
+			Value DLGSFUBCGetPassword()
+			Password
+
+		Control StaticText		Position 5,55
+			Width 50
+			Title "Store"
+		Control SymbolPicker	Position 5,65		ID CTRL_SYM_STORE
+			Width 30	Height 30
+			Value DLGSFUBCGetStoreSymbol()
+
+		Control StaticText		Position 65,55
+			Width 110
+			Title "Spider Graph"
+		Control PenPicker	Position 65,65			ID CTRL_PEN_SPIDERGRAPH
+			Width 30	Height 30
+			Value DLGSFUBCGetSpiderGraphPen()
+
+		Control StaticText		Position 125,55
+			Width 110
+			Title "Buffer"
+		Control PenPicker	Position 125,65		ID CTRL_PEN_BUFFER
+			Width 30	Height 30
+			Value DLGSFUBCGetBufferPen()
+		Control BrushPicker	Position 175,65		ID CTRL_BRS_BUFFER
+			Width 30	Height 30
+			Value DLGSFUBCGetBufferBrush()
+
+
+		Control OKButton		Position 210,80
+			Width 40
+			Calling DLGSFUBC_OKClicked
+		Control CancelButton	Position 260,80
+			Width 40
+
+	If not CommandInfo(CMD_INFO_DLG_OK) Then
+		Exit Function
+	End If
+
+DLGSpectrumFindUsingBufferConfig = TRUE
+
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSpectrumFindUsingBufferConfig")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Software
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGSFUBC_OKClicked
+
+OnError GoTo ErrorOccured
+
+	If ReadControlValue(CTRL_TXT_URL) = "" Then
+		Note "Please enter an URL for the search service!"
+		Dialog Preserve
+		Exit Sub
+	End If
+
+	Call DLGSFUBCSetURL(ReadControlValue(CTRL_TXT_URL))
+	Call DLGSFUBCSetUsername(ReadControlValue(CTRL_TXT_USERNAME))
+	Call DLGSFUBCSetPassword(ReadControlValue(CTRL_TXT_PASSWORD))
+	Call DLGSFUBCSetStoreSymbol(ReadControlValue(CTRL_SYM_STORE))
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBC_OKClicked")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+' Property
+'**********************************************************************************************''
+Sub DLGSFUBCSetURL(ByVal sURL As String)
+
+OnError GoTo ErrorOccured
+
+	msURL = sURL
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCSetURL")
+
+End Sub
+'**********************************************************************************************''
+Function DLGSFUBCGetURL() As String
+
+OnError GoTo ErrorOccured
+
+	DLGSFUBCGetURL = msURL
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCGetURL")
+
+End Function
+
+'**********************************************************************************************''
+' Property
+'**********************************************************************************************''
+Sub DLGSFUBCSetUserName(ByVal sUserName As String)
+
+OnError GoTo ErrorOccured
+
+	msUserName = sUserName
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCSetUserName")
+
+End Sub
+'**********************************************************************************************''
+Function DLGSFUBCGetUserName() As String
+
+OnError GoTo ErrorOccured
+
+	DLGSFUBCGetUserName = msUserName
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCGetUserName")
+
+End Function
+
+'**********************************************************************************************''
+' Property
+'**********************************************************************************************''
+Sub DLGSFUBCSetPassword(ByVal sPassword As String)
+
+OnError GoTo ErrorOccured
+
+	msPassword = sPassword
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCSetPassword")
+
+End Sub
+'**********************************************************************************************''
+Function DLGSFUBCGetPassword() As String
+
+OnError GoTo ErrorOccured
+
+	DLGSFUBCGetPassword = msPassword
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCGetPassword")
+
+End Function
+
+'**********************************************************************************************''
+' Property
+'**********************************************************************************************''
+Sub DLGSFUBCSetStoreSymbol(ByVal symInput As Symbol)
+
+OnError GoTo ErrorOccured
+
+	msymStore = symInput
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCSetStoreSymbol")
+
+End Sub
+'**********************************************************************************************''
+Function DLGSFUBCGetStoreSymbol() As Symbol
+
+OnError GoTo ErrorOccured
+
+	DLGSFUBCGetStoreSymbol = msymStore
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCGetStoreSymbol")
+
+End Function
+
+'**********************************************************************************************''
+' Property
+'**********************************************************************************************''
+Sub DLGSFUBCSetSpiderGraphPen(ByVal penInput As Pen)
+
+OnError GoTo ErrorOccured
+
+	mpenSpiderGraph = penInput
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCSetSpiderGraphPen")
+
+End Sub
+'**********************************************************************************************''
+Function DLGSFUBCGetSpiderGraphPen() As Pen
+
+OnError GoTo ErrorOccured
+
+	DLGSFUBCGetSpiderGraphPen = mpenSpiderGraph
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCGetSpiderGraphPen")
+
+End Function
+
+'**********************************************************************************************''
+' Property
+'**********************************************************************************************''
+Sub DLGSFUBCSetBufferPen(ByVal penInput As Pen)
+
+OnError GoTo ErrorOccured
+
+	mpenBuffer = penInput
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCSetBufferPen")
+
+End Sub
+'**********************************************************************************************''
+Function DLGSFUBCGetBufferPen() As Pen
+
+OnError GoTo ErrorOccured
+
+	DLGSFUBCGetBufferPen = mpenBuffer
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCGetBufferPen")
+
+End Function
+
+'**********************************************************************************************''
+' Property
+'**********************************************************************************************''
+Sub DLGSFUBCSetBufferBrush(ByVal brsInput As Brush)
+
+OnError GoTo ErrorOccured
+
+	mbrsBuffer = brsInput
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCSetBufferBrush")
+
+End Sub
+'**********************************************************************************************''
+Function DLGSFUBCGetBufferBrush() As Brush
+
+OnError GoTo ErrorOccured
+
+	DLGSFUBCGetBufferBrush = mbrsBuffer
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCGetBufferBrush")
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGSFUBCSetConfigFile(ByVal sFile As String)
+
+OnError GoTo ErrorOccured
+
+	msConfigFile	= sFile
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCSetConfigFile")
+	Call ERRShow()
+
+End Sub
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'	:
+'Return value:
+'
+'**********************************************************************************************''
+Function DLGSFUBCGetConfigFile() As String
+
+OnError GoTo ErrorOccured
+
+	DLGSFUBCGetConfigFile = msConfigFile
+	Exit Function
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCGetConfigFile")
+	Call ERRShow()
+
+End Function
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGSFUBCReadConfigFile()
+
+Dim	sFile, sFileUser, sValue As String
+
+OnError GoTo ErrorOccured
+
+	If DLGSFUBCGetConfigFile() = "" Then
+		Note "Configuration file named not specified!"
+		Exit Sub
+	End If
+
+	sFileUser	= GetFolderPath$(FOLDER_MI_PREFERENCE) & DLGSFUBCGetConfigFile()
+	sFile	= ApplicationDirectory$() & DLGSFUBCGetConfigFile()
+
+	Call DEBUGPrint("Reading defaults from " & sFile)
+	'**GENERAL VALUES
+	sValue = CONFIGReadKey(sFile, "SPECTRUMBUFFERFIND", "URL")
+	Call DLGSFUBCSetURL(sValue)
+	sValue = CONFIGReadKey(sFile, "SPECTRUMBUFFERFIND", "USERNAME")
+	Call DLGSFUBCSetUsername(sValue)
+	sValue = CONFIGReadKey(sFile, "SPECTRUMBUFFERFIND", "PASSWORD")
+	Call DLGSFUBCSetPassword(sValue)
+
+	sValue = CONFIGReadKey(sFile, "SPECTRUMBUFFERFIND", "STORESYMBOL")
+	If sValue = "" Then
+		Call DLGSFUBCSetStoreSymbol(MakeFontSymbol(46, 16776960, 12, "MapInfo Cartographic", 0, 0))
+	Else
+		Call DLGSFUBCSetStoreSymbol(STLText2Symbol(sValue))
+	End If
+	sValue = CONFIGReadKey(sFile, "SPECTRUMBUFFERFIND", "SPIDERGRAPHPEN")
+	If sValue = "" Then
+		Call DLGSFUBCSetSpiderGraphPen(MakePen(2, 3, 16744448))
+	Else
+		Call DLGSFUBCSetSpiderGraphPen(STLText2Pen(sValue))
+	End If
+	sValue = CONFIGReadKey(sFile, "SPECTRUMBUFFERFIND", "BUFFERPEN")
+	If sValue = "" Then
+		Call DLGSFUBCSetBufferPen(MakePen(3, 9, RED))
+	Else
+		Call DLGSFUBCSetBufferPen(STLText2Pen(sValue))
+	End If
+	sValue = CONFIGReadKey(sFile, "SPECTRUMBUFFERFIND", "BUFFERBRUSH")
+	If sValue = "" Then
+		Call DLGSFUBCSetBufferBrush(MakeBrush(1, 0, 0))
+	Else
+		Call DLGSFUBCSetBufferBrush(STLText2Brush(sValue))
+	End If
+
+	'***************************************************************************
+	If FileExists(sFileUser) Then
+		Call DEBUGPrint("Reading user settings from " & sFileUser)
+		sValue = CONFIGReadKey(sFileUser, "SPECTRUMBUFFERFIND", "URL")
+		If sValue <> "" Then
+			Call DLGSFUBCSetURL(sValue)
+		End If
+		sValue = CONFIGReadKey(sFileUser, "SPECTRUMBUFFERFIND", "USERNAME")
+		If sValue <> "" Then
+			Call DLGSFUBCSetUsername(sValue)
+		End If
+		sValue = CONFIGReadKey(sFileUser, "SPECTRUMBUFFERFIND", "PASSWORD")
+		If sValue <> "" Then
+			Call DLGSFUBCSetPassword(sValue)
+		End If
+
+		sValue = CONFIGReadKey(sFileUser, "SPECTRUMBUFFERFIND", "STORESYMBOL")
+		If sValue <> "" Then
+			Call DLGSFUBCSetStoreSymbol(STLText2Symbol(sValue))
+		End If
+		sValue = CONFIGReadKey(sFileUser, "SPECTRUMBUFFERFIND", "SPIDERGRAPHPEN")
+		If sValue <> "" Then
+			Call DLGSFUBCSetSpiderGraphPen(STLText2Pen(sValue))
+		End If
+		sValue = CONFIGReadKey(sFileUser, "SPECTRUMBUFFERFIND", "BUFFERPEN")
+		If sValue <> "" Then
+			Call DLGSFUBCSetBufferPen(STLText2Pen(sValue))
+		End If
+		sValue = CONFIGReadKey(sFileUser, "SPECTRUMBUFFERFIND", "BUFFERBRUSH")
+		If sValue <> "" Then
+			Call DLGSFUBCSetBufferBrush(STLText2Brush(sValue))
+		End If
+	End If
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCReadConfigFile")
+	Call ERRShow()
+
+End Sub
+
+'**********************************************************************************************''
+'Created by Peter Horsbøll Møller, Pitney Bowes Business Insight
+'Parameters:
+'
+'**********************************************************************************************''
+Sub DLGSFUBCWriteConfigFile()
+
+Dim	sFile As String
+
+OnError GoTo ErrorOccured
+
+	sFile	= GetFolderPath$(FOLDER_MI_PREFERENCE) & DLGSFUBCGetConfigFile()
+	Call CONFIGWriteKey(sFile, "SPECTRUMBUFFERFIND", "URL", DLGSFUBCGetURL())
+	Call CONFIGWriteKey(sFile, "SPECTRUMBUFFERFIND", "USERNAME", DLGSFUBCGetUsername())
+	Call CONFIGWriteKey(sFile, "SPECTRUMBUFFERFIND", "PASSWORD", DLGSFUBCGetPassword())
+	Call CONFIGWriteKey(sFile, "SPECTRUMBUFFERFIND", "STORESYMBOL", STLSymbol2Text(DLGSFUBCGetStoreSymbol()))
+	Call CONFIGWriteKey(sFile, "SPECTRUMBUFFERFIND", "SPIDERGRAPHPEN", STLPen2Text(DLGSFUBCGetSpiderGraphPen()))
+	Call CONFIGWriteKey(sFile, "SPECTRUMBUFFERFIND", "BUFFERPEN", STLPen2Text(DLGSFUBCGetBufferPen()))
+	Call CONFIGWriteKey(sFile, "SPECTRUMBUFFERFIND", "BUFFERBRUSH", STLBrush2Text(DLGSFUBCGetBufferBrush()))
+
+	Exit Sub
+'-------------------------
+ErrorOccured:
+	Call ERRCreate(Err(), Error$(), "DLGSFUBCWriteConfigFile")
+	Call ERRShow()
+
+End Sub

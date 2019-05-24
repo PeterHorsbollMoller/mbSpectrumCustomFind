@@ -1,0 +1,25 @@
+﻿Declare Function DLGSpectrumFindUsingBufferConfig() As Logical
+
+Declare Function DLGSFUBCGetURL() As String
+Declare Sub DLGSFUBCSetURL(ByVal sURL As String)
+
+Declare Function DLGSFUBCGetUserName() As String
+Declare Sub DLGSFUBCSetUserName(ByVal sUserName As String)
+Declare Function DLGSFUBCGetPassword() As String
+Declare Sub DLGSFUBCSetPassword(ByVal sPassword As String)
+
+Declare Sub DLGSFUBCSetStoreSymbol(ByVal symInput As Symbol)
+Declare Function DLGSFUBCGetStoreSymbol() As Symbol
+Declare Sub DLGSFUBCSetSpiderGraphPen(ByVal penInput As Pen)
+Declare Function DLGSFUBCGetSpiderGraphPen() As Pen
+Declare Sub DLGSFUBCSetBufferPen(ByVal penInput As Pen)
+Declare Function DLGSFUBCGetBufferPen() As Pen
+Declare Sub DLGSFUBCSetBufferBrush(ByVal brsInput As Brush)
+Declare Function DLGSFUBCGetBufferBrush() As Brush
+
+Declare Sub DLGSFUBCSetConfigFile(ByVal sFile As String)
+Declare Function DLGSFUBCGetConfigFile() As String
+Declare Sub DLGSFUBCReadConfigFile()
+Declare Sub DLGSFUBCWriteConfigFile()
+
+

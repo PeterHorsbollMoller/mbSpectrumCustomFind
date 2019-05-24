@@ -5,7 +5,7 @@
 Declare Method SCFWSInitiate
 	Class "SearchUsingServices.SpectrumCustomFind"  Lib "SearchUsingServices.dll"
 	Alias Initiate
-		( ByVal timeout As Integer
+		( ByVal timeout As Integer	'in miliseconds
 		, ByVal serverURL As String
 		, ByVal userName As String
 		, ByVal passWord As String
@@ -41,8 +41,8 @@ Declare Method SCFWSGetResultDetails
 	Class "SearchUsingServices.SpectrumCustomFind"  Lib "SearchUsingServices.dll"
 	Alias GetResultDetails
 		( ByVal nElement As Integer
-		, geojsonPoint As String
-		, geojsonMBR As String
+		, longitude As String
+		, latitude As String
 		) As String
 
 Declare Method SCFWSGetResultX
@@ -52,6 +52,90 @@ Declare Method SCFWSGetResultX
 		) As String
 Declare Method SCFWSGetResultY
 	Class "SearchUsingServices.SpectrumCustomFind"  Lib "SearchUsingServices.dll"
+	Alias GetResultY
+		( ByVal nElement As Integer
+		) As String
+
+'***************************************************************************************
+
+Declare Method SMFWSInitiate
+	Class "SearchUsingServices.SpectrumMapFind"  Lib "SearchUsingServices.dll"
+	Alias Initiate
+		( ByVal timeout As Integer	'in miliseconds
+		, ByVal serverURL As String
+		, ByVal userName As String
+		, ByVal passWord As String
+		)
+
+Declare Method SMFWSDoSearch
+	Class "SearchUsingServices.SpectrumMapFind"  Lib "SearchUsingServices.dll"
+	Alias DoSearch
+		( ByVal sLongitude As String
+		, ByVal sLatitude As String
+		, ByVal sDistance As String
+		, ByVal sEPSG As String
+		) As Integer
+
+Declare Method SMFWSGetLatestURL
+	Class "SearchUsingServices.SpectrumMapFind"  Lib "SearchUsingServices.dll"
+	Alias GetLatestURL
+		() As String
+Declare Method SMFWSGetServerURL
+	Class "SearchUsingServices.SpectrumMapFind"  Lib "SearchUsingServices.dll"
+	Alias GetServerURL
+		() As String
+
+Declare Method SMFWSGetResultDescriptions
+	Class "SearchUsingServices.SpectrumMapFind"  Lib "SearchUsingServices.dll"
+	Alias GetResultDescriptions
+		( arrResults() As String
+		) As Integer
+Declare Method SMFWSGetResultAttribute
+	Class "SearchUsingServices.SpectrumMapFind"  Lib "SearchUsingServices.dll"
+	Alias GetResultAttribute
+		( ByVal nElement As Integer
+		, ByVal sAtttributeName As String
+		) As String
+Declare Method SMFWSGetResultDetails
+	Class "SearchUsingServices.SpectrumMapFind"  Lib "SearchUsingServices.dll"
+	Alias GetResultDetails
+		( ByVal nElement As Integer
+		, longitude As String
+		, latitude As String
+		) As String
+
+Declare Method SMFWSGetName
+	Class "SearchUsingServices.SpectrumMapFind"  Lib "SearchUsingServices.dll"
+	Alias GetName
+		( ByVal nElement As Integer
+		) As String
+Declare Method SMFWSGetPB_ID
+	Class "SearchUsingServices.SpectrumMapFind"  Lib "SearchUsingServices.dll"
+	Alias GetPB_ID
+		( ByVal nElement As Integer
+		) As String
+Declare Method SMFWSAddressline
+	Class "SearchUsingServices.SpectrumMapFind"  Lib "SearchUsingServices.dll"
+	Alias GetAddressline
+		( ByVal nElement As Integer
+		) As String
+Declare Method SMFWSZipcode
+	Class "SearchUsingServices.SpectrumMapFind"  Lib "SearchUsingServices.dll"
+	Alias GetZipcode
+		( ByVal nElement As Integer
+		) As String
+Declare Method SMFWSGetAreaname
+	Class "SearchUsingServices.SpectrumMapFind"  Lib "SearchUsingServices.dll"
+	Alias GetAreaname
+		( ByVal nElement As Integer
+		) As String
+Declare Method SMFWSGetResultX
+	Class "SearchUsingServices.SpectrumMapFind"  Lib "SearchUsingServices.dll"
+	Alias GetResultX
+		( ByVal nElement As Integer
+		) As String
+Declare Method SMFWSGetResultY
+	Class "SearchUsingServices.SpectrumMapFind"  Lib "SearchUsingServices.dll"
 	Alias GetResultY
 		( ByVal nElement As Integer
 		) As String
