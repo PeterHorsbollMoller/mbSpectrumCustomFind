@@ -17,7 +17,7 @@ Include "Library\RibbonElements.def"
 
 Define xProgram 		"SpectrumCustomFind"
 Define xProgramMenu		"SpectrumCustomFind"
-Define xVersion 		"1.5"
+Define xVersion 		"1.5.1"
 Define xYear			"2019"
 Define xAddToMenuBar	FALSE
 
@@ -267,9 +267,9 @@ OnError GoTo ErrorOccured
 	fYMin	= CommandInfo(CMD_INFO_Y)
 	fXMax	= CommandInfo(CMD_INFO_X2)
 	fYMax	= CommandInfo(CMD_INFO_Y2)
+
 	fXCenter	= (fXMin + fXMax) / 2
 	fYCenter	= (fYMin + fYMax) / 2
-
 	fRadius	= Distance(fXCenter, fYCenter, fXMax, fYCenter, "m")
 
 	Call DEBUGPrint("Search at (" & FormatNumber$(fXCenter) & " ;" & FormatNumber$(fYCenter) & ") | " & FormatNumber$(fRadius) & " m.")
@@ -372,6 +372,7 @@ OnError GoTo ErrorOccured
 							Global Brush DLGSFUBCGetBufferBrush()	'(1, 0, 0)
 				FriendlyName "Search Area - " & FormatNumber$(Round(fRadius, 1)) & " meter radius"
 
+		Call RBNNotificationShow("Search for Stores", "Found " & FormatNumber$(nNumFound) & " stores within approximately " & FormatNumber$(Round(fRadius, 1)) & " m. of the location", Notify_Info, 10000)
 	Else
 		Call RBNNotificationShowAtCursor("Search for Stores", "No stores found near this location", Notify_Info, 2500)
 	End If
